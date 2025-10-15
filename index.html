@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Jogo de Consumo Consciente</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>💧 Jogo de Consumo Consciente 💡</h1>
+
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+    <div id="buttons">
+        <button onclick="chooseAction('banhoCurto')">🚿 Banho Curto</button>
+        <button onclick="chooseAction('banhoLongo')">🚿 Banho Longo</button>
+        <button onclick="chooseAction('luzDesligada')">💡 Desligar Luzes</button>
+        <button onclick="chooseAction('luzLigada')">💡 Deixar Luzes Ligadas</button>
+        <button onclick="chooseAction('refeicaoVeg')">🥦 Refeição Vegetariana</button>
+        <button onclick="chooseAction('refeicaoCarne')">🍖 Refeição com Carne</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
