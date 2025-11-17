@@ -1,138 +1,229 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+// =========================
+// VARIÁVEIS DO JOGO
+// =========================
 
-// Recursos iniciais
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// Recursos
 let energia = 100;
 let agua = 100;
-let alimentacao = 100;
+let comida = 100;
 let sustentabilidade = 100;
 
-// Variáveis para animação
-let sunX = 100;
-let cloudX1 = 0;
-let cloudX2 = 300;
+// Pontuação
+let pontos = 0;
 
-// Atualização automática (tempo)
-let frame = 0;
+// Mensagem educativa
+let mensagem = "";
+let mensagemOpacity = 0;
 
-function drawBackground() {
-  // Muda o fundo com base na sustentabilidade
-  let greenValue = Math.min(255, Math.max(100, sustentabilidade * 2));
-  let redValue = 255 - greenValue;
-  ctx.fillStyle = `rgb(${redValue}, ${greenValue}, 150)`;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+// Animações
+let solX = 0;
+let nuvemX = 200;
+let nuvem2X = 600;
 
-  // Sol
-  ctx.beginPath();
-  ctx.arc(sunX, 80, 40, 0, Math.PI * 2);
-  ctx.fillStyle = "#FFD54F";
-  ctx.fill();
-
-  // Nuvens
-  drawCloud(cloudX1, 100);
-  drawCloud(cloudX2, 60);
+// =========================
+// FUNÇÃO PARA MENSAGENS EDUCATIVAS
+// =========================
+function mostrarMensagem(texto) {
+    mensagem = texto;
+    mensagemOpacity = 1;
 }
 
-function drawCloud(x, y) {
-  ctx.beginPath();
-  ctx.fillStyle = "white";
-  ctx.ellipse(x, y, 40, 20, 0, 0, Math.PI * 2);
-  ctx.ellipse(x + 25, y - 10, 35, 18, 0, 0, Math.PI * 2);
-  ctx.ellipse(x + 50, y, 40, 20, 0, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawStats() {
-  ctx.fillStyle = '#3c6e47';
-  ctx.font = '18px Arial';
-  ctx.fillText(`Energia: ${energia}`, 50, 300);
-  ctx.fillText(`Água: ${agua}`, 50, 325);
-  ctx.fillText(`Alimentação: ${alimentacao}`, 50, 350);
-  ctx.fillText(`Sustentabilidade: ${sustentabilidade}`, 50, 375);
-
-  // Barra de sustentabilidade
-  ctx.fillStyle = '#a5d6a7';
-  ctx.fillRect(250, 355, sustentabilidade * 3, 15);
-  ctx.strokeRect(250, 355, 300, 15);
-}
-
+// =========================
+// AÇÕES DO JOGADOR
+// =========================
 function chooseAction(action) {
-  switch(action) {
-    case 'banhoCurto':
-      agua -= 2;
-      sustentabilidade += 3;
-      break;
-    case 'banhoLongo':
-      agua -= 10;
-      sustentabilidade -= 5;
-      break;
-    case 'luzDesligada':
-      energia += 2;
-      sustentabilidade += 4;
-      break;
-    case 'luzLigada':
-      energia -= 5;
-      sustentabilidade -= 3;
-      break;
-    case 'refeicaoVeg':
-      alimentacao -= 3;
-      sustentabilidade += 4;
-      break;
-    case 'refeicaoCarne':
-      alimentacao -= 4;
-      sustentabilidade -= 5;
-      break;
-  }
+    switch (action) {
+        case "banhoCurto":
+            agua += 5;
+            sustentabilidade += 3;
+            pontos += 10;
+            mostrarMensagem("Banhos curtos poupam até 80L de água!");
+            break;
 
-  limitarValores();
+        case "banhoLongo":
+            agua -= 10;
+            sustentabilidade -= 5;
+            pontos -= 5;
+            mostrarMensagem("Banhos longos gastam MUITA água!");
+            break;
+
+        case "luzDesligada":
+            energia += 5;
+            sustentabilidade += 2;
+            pontos += 10;
+            mostrarMensagem("Desligar luzes economiza energia!");
+            break;
+
+        case "luzLigada":
+            energia -= 10;
+            pontos -= 5;
+            mostrarMensagem("Luzes acesas à toa = desperdício!");
+            break;
+
+        case "refeicaoVeg":
+            comida += 5;
+            sustentabilidade += 4;
+            pontos += 12;
+            mostrarMensagem("Refeições vegetarianas reduzem emissões!");
+            break;
+
+        case "refeicaoCarne":
+            comida -= 8;
+            sustentabilidade -= 4;
+            pontos -= 3;
+            mostrarMensagem("Excesso de carne aumenta impacto ambiental.");
+            break;
+    }
+
+    // Limitar valores
+    energia = Math.max(0, Math.min(100, energia));
+    agua = Math.max(0, Math.min(100, agua));
+    comida = Math.max(0, Math.min(100, comida));
+    sustentabilidade = Math.max(0, Math.min(100, sustentabilidade));
 }
 
-function limitarValores() {
-  energia = Math.max(0, Math.min(100, energia));
-  agua = Math.max(0, Math.min(100, agua));
-  alimentacao = Math.max(0, Math.min(100, alimentacao));
-  sustentabilidade = Math.max(0, Math.min(100, sustentabilidade));
+// =========================
+// DESENHAR BARRAS
+// =========================
+function drawBar(label, value, y) {
+    ctx.fillStyle = "black";
+    ctx.fillText(label, 20, y - 5);
+
+    ctx.fillStyle = "white";
+    ctx.fillRect(20, y, 200, 20);
+
+    ctx.fillStyle = "green";
+    ctx.fillRect(20, y, value * 2, 20);
 }
 
-function checkGameOver() {
-  if (energia <= 0 || agua <= 0 || alimentacao <= 0 || sustentabilidade <= 0) {
-    alert("😢 O planeta não aguentou! Tenta ser mais sustentável!");
-    resetGame();
-  }
+// =========================
+// LOOP DO JOGO
+// =========================
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Fundo muda consoante sustentabilidade
+    const red = 255 - sustentabilidade * 2;
+    const green = sustentabilidade * 2;
+    ctx.fillStyle = `rgb(${red}, ${green}, 100)`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Sol
+    ctx.fillStyle = "yellow";
+    ctx.beginPath();
+    ctx.arc(solX, 80, 40, 0, Math.PI * 2);
+    ctx.fill();
+    solX = (solX + 1) % 900;
+
+    // Nuvens
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.arc(nuvemX, 60, 30, 0, Math.PI * 2);
+    ctx.arc(nuvemX + 40, 60, 25, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(nuvem2X, 100, 25, 0, Math.PI * 2);
+    ctx.arc(nuvem2X + 35, 100, 30, 0, Math.PI * 2);
+    ctx.fill();
+
+    nuvemX -= 0.5;
+    nuvem2X -= 0.3;
+    if (nuvemX < -100) nuvemX = 900;
+    if (nuvem2X < -100) nuvem2X = 900;
+
+    // Barras
+    ctx.fillStyle = "black";
+    ctx.font = "16px Arial";
+    drawBar("Energia", energia, 250);
+    drawBar("Água", agua, 280);
+    drawBar("Alimentação", comida, 310);
+    drawBar("Sustentabilidade", sustentabilidade, 340);
+
+    // Pontos
+    ctx.fillStyle = "black";
+    ctx.fillText("Pontuação: " + pontos, 650, 30);
+
+    // Mensagem educativa com fade
+    if (mensagemOpacity > 0) {
+        ctx.fillStyle = `rgba(0,0,0,${mensagemOpacity})`;
+        ctx.fillText(mensagem, 250, 200);
+        mensagemOpacity -= 0.01;
+    }
+
+    // GAME OVER
+    if (energia === 0 || agua === 0 || comida === 0 || sustentabilidade === 0) {
+        ctx.fillStyle = "black";
+        ctx.font = "40px Arial";
+        ctx.fillText("GAME OVER", 280, 200);
+        ctx.font = "20px Arial";
+        ctx.fillText("Pontuação final: " + pontos, 320, 240);
+        return; // parar o jogo
+    }
+
+    requestAnimationFrame(gameLoop);
 }
 
-function resetGame() {
-  energia = agua = alimentacao = sustentabilidade = 100;
+gameLoop();
+
+// =========================================================
+// ML5.JS - RECONHECIMENTO DE VOZ
+// =========================================================
+
+let classifier;
+
+function startML() {
+    // OPÇÃO 1: Usar modelo pré-treinado do ml5.js
+    // Este modelo reconhece palavras básicas em inglês
+    classifier = ml5.soundClassifier('SpeechCommands18w', modelReady);
+    
+    // OPÇÃO 2: Se tiver o modelo na pasta e usar servidor HTTP local:
+    // const modelURL = "model/model.json";
+    // classifier = ml5.soundClassifier(modelURL, { probabilityThreshold: 0.85 }, modelReady);
 }
 
-function update() {
-  frame++;
-
-  // Movimento do sol e nuvens
-  sunX += 0.2;
-  if (sunX > canvas.width + 40) sunX = -40;
-
-  cloudX1 += 0.3;
-  cloudX2 += 0.2;
-  if (cloudX1 > canvas.width + 60) cloudX1 = -100;
-  if (cloudX2 > canvas.width + 60) cloudX2 = -200;
-
-  // Recursos decaem lentamente com o tempo
-  if (frame % 120 === 0) { // a cada ~2 segundos
-    energia -= 1;
-    agua -= 1;
-    alimentacao -= 1;
-    sustentabilidade -= 0.5;
-  }
-
-  limitarValores();
-  checkGameOver();
-
-  drawBackground();
-  drawStats();
-
-  requestAnimationFrame(update);
+function modelReady() {
+    console.log("Modelo de voz carregado!");
+    console.log("Diga as palavras para testar (ex: up, down, left, right, go, stop)");
+    classifier.classify(gotResult);
 }
 
-// Iniciar o jogo
-update();
+function gotResult(error, results) {
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    const comando = results[0].label.toLowerCase();
+    const confianca = results[0].confidence;
+    
+    console.log("Comando detectado:", comando, "Confiança:", confianca);
+
+    // Mapear comandos do modelo pré-treinado para ações do jogo
+    // Você pode adaptar estas correspondências
+    if (comando === "up") chooseAction("banhoCurto");
+    if (comando === "down") chooseAction("banhoLongo");
+    if (comando === "left") chooseAction("luzDesligada");
+    if (comando === "right") chooseAction("luzLigada");
+    if (comando === "go") chooseAction("refeicaoVeg");
+    if (comando === "stop") chooseAction("refeicaoCarne");
+    
+    // Para usar seu modelo customizado, descomente as linhas abaixo:
+    // if (comando === "curto") chooseAction("banhoCurto");
+    // if (comando === "longo") chooseAction("banhoLongo");
+    // if (comando === "luzoff") chooseAction("luzDesligada");
+    // if (comando === "luzon") chooseAction("luzLigada");
+    // if (comando === "vegetariana") chooseAction("refeicaoVeg");
+    // if (comando === "carne") chooseAction("refeicaoCarne");
+}
+
+// Iniciar o reconhecimento de voz
+try {
+    startML();
+} catch (error) {
+    console.error("Erro ao iniciar ML:", error);
+    console.log("O jogo funcionará apenas com os botões");
+}
