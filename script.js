@@ -177,16 +177,12 @@ let classifier;
 
 function startML() {
     // OPÇÃO 1: Usar modelo pré-treinado do ml5.js
-    // Este modelo reconhece palavras básicas em inglês
     classifier = ml5.soundClassifier('SpeechCommands18w', modelReady);
-    
-    // OPÇÃO 2: Se tiver o modelo na pasta e usar servidor HTTP local:
-    // const modelURL = "model/model.json";
-    // classifier = ml5.soundClassifier(modelURL, { probabilityThreshold: 0.85 }, modelReady);
 }
 
 function modelReady() {
     console.log("Modelo de voz carregado!");
+    //console.log("Diga as palavras para testar (ex: curto, longo, luzoff, luzon, vegetariana, carne)");
     console.log("Diga as palavras para testar (ex: up, down, left, right, go, stop)");
     classifier.classify(gotResult);
 }
@@ -203,21 +199,12 @@ function gotResult(error, results) {
     console.log("Comando detectado:", comando, "Confiança:", confianca);
 
     // Mapear comandos do modelo pré-treinado para ações do jogo
-    // Você pode adaptar estas correspondências
     if (comando === "up") chooseAction("banhoCurto");
     if (comando === "down") chooseAction("banhoLongo");
     if (comando === "left") chooseAction("luzDesligada");
     if (comando === "right") chooseAction("luzLigada");
     if (comando === "go") chooseAction("refeicaoVeg");
     if (comando === "stop") chooseAction("refeicaoCarne");
-    
-    // Para usar seu modelo customizado, descomente as linhas abaixo:
-    // if (comando === "curto") chooseAction("banhoCurto");
-    // if (comando === "longo") chooseAction("banhoLongo");
-    // if (comando === "luzoff") chooseAction("luzDesligada");
-    // if (comando === "luzon") chooseAction("luzLigada");
-    // if (comando === "vegetariana") chooseAction("refeicaoVeg");
-    // if (comando === "carne") chooseAction("refeicaoCarne");
 }
 
 // Iniciar o reconhecimento de voz

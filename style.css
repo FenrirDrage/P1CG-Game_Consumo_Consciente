@@ -12,6 +12,7 @@ canvas {
 
 #buttons {
     margin-top: 20px;
+    margin-left: 5%;
 }
 
 button {
@@ -27,4 +28,9 @@ button {
 
 button:hover {
     background: #45a049;
+}
+
+table {
+    margin-top: 20px;
+    margin-left: 40%
 }
